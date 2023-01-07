@@ -161,6 +161,29 @@ envid_t thread_create(void (*func)());
 void thread_main();
 int sys_thread_create(uintptr_t func);
 
+extern volatile uintptr_t eip;
+
+struct waiting_thread {
+	envid_t envid;
+	struct waiting_thread* next;
+};
+
+struct waiting_queue {
+	struct waiting_thread* first;
+	struct waiting_thread* last;
+};
+
+struct Mutex {
+	unsigned locked;      
+	struct waiting_queue queue;
+	envid_t owner;
+};
+
+void _init(struct Mutex* mtx);
+void mutex_destroy(struct Mutex* mtx);
+void mutex_lock(struct Mutex* mtx);
+void mutex_unlock(struct Mutex* mtx);
+
 /* File open modes */
 #define O_RDONLY  0x0000 /* open for reading only */
 #define O_WRONLY  0x0001 /* open for writing only */
