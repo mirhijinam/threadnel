@@ -421,6 +421,14 @@ sys_region_refs(uintptr_t addr, size_t size, uintptr_t addr2, uintptr_t size2) {
     return region_maxref(&curenv->address_space, addr, size);
 }
 
+// Individual
+int sys_thread_create(uintptr_t func){
+
+    int id = thread_create(func);
+    return id;
+}
+
+
 /* Dispatches to the correct kernel function, passing the arguments. */
 uintptr_t
 syscall(uintptr_t syscallno, uintptr_t a1, uintptr_t a2, uintptr_t a3, uintptr_t a4, uintptr_t a5, uintptr_t a6) {
@@ -437,8 +445,8 @@ syscall(uintptr_t syscallno, uintptr_t a1, uintptr_t a2, uintptr_t a3, uintptr_t
     } else if (syscallno == SYS_env_destroy) {
         return sys_env_destroy((envid_t)a1);
     }
+
     // LAB 9: Your code here
-    // LAB 11: Your code here
     else if (syscallno == SYS_exofork) {
         return sys_exofork();
     } else if (syscallno == SYS_alloc_region) {
@@ -460,10 +468,19 @@ syscall(uintptr_t syscallno, uintptr_t a1, uintptr_t a2, uintptr_t a3, uintptr_t
         return sys_ipc_recv(a1, a2);
     } else if (syscallno == SYS_region_refs) {
         return sys_region_refs(a1, (size_t)a2, a3, a4);
+        
+    // LAB 11: Your code here
     } else if (syscallno == SYS_env_set_trapframe) {
         return sys_env_set_trapframe((envid_t)a1, (struct Trapframe *)a2);
+     
+    // LAB 12: Your code here
     } else if (syscallno == SYS_gettime) {
         return sys_gettime();
+    
+    // Individual
+    } else if (syscallno == SYS_thread_create) {
+        return sys_thread_create(a1);
     }
+
     return -E_NO_SYS;
 }

@@ -57,8 +57,27 @@ struct AddressSpace {
     struct Page *root; /* root node of address space tree */
 };
 
+typedef uint32_t process_id;
+
+#define THRDSTKSIZE 		PGSIZE
+#define THRDSTKGAP 		PGSIZE
+#define MAX_THREADS 		(NENV - 1)
+
+struct FreeStacks {
+	uint32_t id;
+	uintptr_t addr;
+	struct FreeStacks* next_stack;
+};
+
+#define MAX_PROCESS_THREADS 	10
+#define THREAD_WAIT		1
+#define THREAD_FREE		0
 
 struct Env {
+    process_id env_process_id;	// process id
+	uint32_t env_stack_id;		// id of the stack used for this env/thread
+	int32_t worker_threads[2][MAX_PROCESS_THREADS];
+
     struct Trapframe env_tf; /* Saved registers */
     struct Env *env_link;    /* Next free Env */
     envid_t env_id;          /* Unique environment identifier */
