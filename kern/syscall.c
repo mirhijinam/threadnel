@@ -428,7 +428,29 @@ int sys_thread_create(uintptr_t func){
     return id;
 }
 
+void 	
+sys_thread_free(envid_t envid)
+{
+	struct Env* e;
+	envid2env(envid, &e, 0);
+	thread_free(e);
+}
 
+void 	
+sys_thread_join(envid_t envid) 
+{
+	thread_join(envid);
+}
+
+void 	
+sys_thread_destroy(envid_t envid)
+{
+	struct Env* e;
+	envid2env(envid, &e, 0);
+	thread_destroy(e);
+}
+
+/* Dispatches to the correct kernel function, passing the arguments. */
 /* Dispatches to the correct kernel function, passing the arguments. */
 uintptr_t
 syscall(uintptr_t syscallno, uintptr_t a1, uintptr_t a2, uintptr_t a3, uintptr_t a4, uintptr_t a5, uintptr_t a6) {
@@ -436,51 +458,64 @@ syscall(uintptr_t syscallno, uintptr_t a1, uintptr_t a2, uintptr_t a3, uintptr_t
      * Return any appropriate return value. */
 
     // LAB 8: Your code here
-    if (syscallno == SYS_cputs) {
+    switch (syscallno) {
+    case SYS_cputs:
         return sys_cputs((const char *)a1, (size_t)a2);
-    } else if (syscallno == SYS_cgetc) {
+    case SYS_cgetc:
         return sys_cgetc();
-    } else if (syscallno == SYS_getenvid) {
+    case SYS_getenvid:
         return sys_getenvid();
-    } else if (syscallno == SYS_env_destroy) {
+    case SYS_env_destroy:
         return sys_env_destroy((envid_t)a1);
-    }
-
-    // LAB 9: Your code here
-    else if (syscallno == SYS_exofork) {
+    case SYS_exofork:
         return sys_exofork();
-    } else if (syscallno == SYS_alloc_region) {
+    case SYS_alloc_region:
         return sys_alloc_region((envid_t)a1, a2, (size_t)a3, (int)a4);
-    } else if (syscallno == SYS_map_region) {
+    case SYS_map_region:
         return sys_map_region((envid_t) a1, a2,(envid_t)a3, a4, (size_t)a5, (int)a6);
-    } else if (syscallno == SYS_unmap_region) {
+    case SYS_unmap_region:
         return sys_unmap_region((envid_t) a1, a2,(size_t)a3);
-    } else if (syscallno == SYS_env_set_status) {
+    case SYS_env_set_status:
         return sys_env_set_status((envid_t)a1, (int)a2);
-    } else if (syscallno == SYS_env_set_pgfault_upcall) {
+    case SYS_env_set_pgfault_upcall:
         return sys_env_set_pgfault_upcall((envid_t) a1, (void *)a2);
-    } else if (syscallno == SYS_yield) {
+    case SYS_yield:
         sys_yield();
         return 0;
-    } else if (syscallno == SYS_ipc_try_send) {
+    case SYS_ipc_try_send:
         return sys_ipc_try_send((envid_t)a1, (uint32_t)a2, a3,(size_t)a4,(int)a5);
-    } else if (syscallno == SYS_ipc_recv) {
+    case SYS_ipc_recv:
         return sys_ipc_recv(a1, a2);
-    } else if (syscallno == SYS_region_refs) {
+    case SYS_region_refs:
         return sys_region_refs(a1, (size_t)a2, a3, a4);
-        
-    // LAB 11: Your code here
-    } else if (syscallno == SYS_env_set_trapframe) {
+    case SYS_env_set_trapframe:
         return sys_env_set_trapframe((envid_t)a1, (struct Trapframe *)a2);
-     
-    // LAB 12: Your code here
-    } else if (syscallno == SYS_gettime) {
+    case SYS_gettime:
         return sys_gettime();
-    
-    // Individual
-    } else if (syscallno == SYS_thread_create) {
+
+    //  individual
+    case SYS_thread_create:
         return sys_thread_create(a1);
+    
+    case SYS_thread_free:
+			sys_thread_free((envid_t)a1);
+			return 0;
+
+	case SYS_thread_join:
+			sys_thread_join((envid_t)a1);
+			return 0;
+
+    case SYS_thread_destroy:
+			sys_thread_destroy((envid_t)a1);
+			return 0;
+    
+    default:
+        return -E_NO_SYS;
     }
+    // LAB 9: Your code here
+    // LAB 11: Your code here
+    // LAB 12: Your code here
 
     return -E_NO_SYS;
 }
+

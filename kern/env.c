@@ -553,6 +553,12 @@ env_run(struct Env *env) {
 struct FreeStacks* thread_free_stacks = NULL; //free stacks for threads
 static struct FreeStacks* free_stacks_stack;
 
+void stack_push(uint32_t id)
+{	
+	thread_free_stacks[id].next_stack = free_stacks_stack;
+        free_stacks_stack = &thread_free_stacks[id];
+}
+
 struct FreeStacks* stack_pop()
 {
 	struct FreeStacks* ret = free_stacks_stack;
@@ -603,4 +609,109 @@ thread_create(uintptr_t func)
 	cprintf("in thread create: thread id: %d\n", e->env_id);
 #endif
 	return e->env_id;
+}
+
+void
+thread_destroy(struct Env *e){
+
+    cprintf("thread_destroy() hasn't been realised yet");
+
+}
+/*
+void
+thread_destroy(struct Env *e)
+{
+#ifdef TRACE
+	cprintf("In thread destroy, destroying thread: %d\n", e->env_id); 
+#endif
+
+	stack_push(e->env_stack_id);
+	e->address_space.pml4 = 0;
+	e->env_status = ENV_FREE;
+	e->env_link = env_free_list;
+	env_free_list = e;
+
+	size_t i;
+	for (i = 0; i < NCPU; i++) {
+		if ((cpus[i].cpu_env) && (cpus[i].cpu_env->env_id == e->env_id)) {
+			cpus[i].cpu_env->env_status = ENV_DYING;
+		}
+	}
+
+	if (curenv == e) {
+		curenv = NULL;
+		sched_yield();
+	}
+}
+*/
+void 
+thread_free(struct Env* e)
+{
+#ifdef TRACE
+	cprintf("In thread free, freeing thread: %d\n", e->env_id); 
+#endif
+	stack_push(e->env_stack_id);
+	struct Env* main_thrd = &envs[ENVX(e->env_process_id)];
+
+	int i;
+	for(i = 0; i < MAX_PROCESS_THREADS; i++) {
+		if(main_thrd->worker_threads[0][i] == e->env_id) {
+			main_thrd->worker_threads[0][i] = 0;	
+			main_thrd->worker_threads[1][i] = 0;
+			break;
+		}
+		if(i == MAX_PROCESS_THREADS - 1) {
+			panic("environment is not a worker thread of env E - THIS SHOULD NOT HAPPEN\n");
+		}
+	}
+
+	for(i = 0; i < MAX_PROCESS_THREADS; i++) {
+		if (main_thrd->worker_threads[1][i] == THREAD_WAIT) {
+			break;
+		} 
+		if (i == MAX_PROCESS_THREADS-1) {
+			main_thrd->env_status = ENV_RUNNABLE;
+		}
+	}
+
+	e->address_space.pml4 = 0;
+	e->env_status = ENV_FREE;
+	e->env_link = env_free_list;
+	env_free_list = e;
+
+	if (curenv == e) {
+		curenv = NULL;
+		sched_yield();
+	}
+}
+
+void 
+thread_join(envid_t envid)
+{
+	struct Env* worker = &envs[ENVX(envid)];
+	struct Env* main_thrd = &envs[ENVX(worker->env_process_id)];
+	
+	if (!worker || !main_thrd) {
+		cprintf("Unable to join - no such thread in the process!\n");
+		return;
+	}
+
+	int i;
+	for(i = 0; i < MAX_PROCESS_THREADS; i++) {
+		if(main_thrd->worker_threads[0][i] == envid) {
+			main_thrd->worker_threads[1][i] = THREAD_WAIT;	
+			break;
+		}
+		if(i == MAX_PROCESS_THREADS - 1) {
+#ifdef TRACE
+			cprintf("Unable to join - no such thread in the process!\n");
+#endif
+			return;
+		}
+	}
+#ifdef TRACE
+	cprintf("in thread joing: joining thread id: %d\n", e->env_id);
+#endif
+	main_thrd->env_status = ENV_NOT_RUNNABLE;
+	sched_yield();
 }

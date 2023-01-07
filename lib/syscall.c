@@ -148,7 +148,28 @@ sys_gettime(void) {
     return syscall(SYS_gettime, 0, 0, 0, 0, 0, 0, 0);
 }
 
+
+//individual
 envid_t
 sys_thread_create(uintptr_t func){
     return syscall(SYS_thread_create, func, 0, 0, 0, 0, 0, 0);
 }
+
+void 	
+sys_thread_free(envid_t envid)
+{
+ 	syscall(SYS_thread_free, envid, 0, 0, 0, 0, 0, 0);
+}
+
+void 	
+sys_thread_join(envid_t envid) 
+{
+	syscall(SYS_thread_join, envid, 0, 0, 0, 0, 0, 0);
+}
+
+void 	
+sys_thread_destroy(envid_t envid)
+{
+ 	syscall(SYS_thread_destroy, envid, 0, 0, 0, 0, 0, 0);
+}
+

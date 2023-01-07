@@ -19,7 +19,11 @@ void env_free(struct Env *env);
 void env_create(uint8_t *binary, size_t size, enum EnvType type);
 void env_destroy(struct Env *env);
 
+//threads
 envid_t thread_create(uintptr_t func);
+void thread_free(struct Env* e);
+void thread_join(envid_t envid);
+void thread_destroy(struct Env *e);
 
 int envid2env(envid_t envid, struct Env **env_store, bool checkperm);
 _Noreturn void env_run(struct Env *e);

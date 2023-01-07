@@ -157,9 +157,15 @@ int pipeisclosed(int pipefd);
 /* wait.c */
 void wait(envid_t env);
 
+/*Individual task*/
 envid_t thread_create(void (*func)());
 void thread_main();
-int sys_thread_create(uintptr_t func);
+
+int	 sys_thread_create(uintptr_t func);
+void    sys_thread_free(envid_t envid);
+void    sys_thread_join(envid_t envid);
+void sys_thread_destroy(envid_t envid);
+
 
 /* File open modes */
 #define O_RDONLY  0x0000 /* open for reading only */
