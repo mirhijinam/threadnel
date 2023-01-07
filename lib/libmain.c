@@ -37,3 +37,10 @@ libmain(int argc, char **argv) {
     exit();
 #endif
 }
+
+extern volatile uintptr_t rip;
+void
+thread_main() {
+    void (*func)(void) = (void (*)(void))rip;
+    func();
+}
