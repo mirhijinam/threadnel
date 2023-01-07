@@ -36,7 +36,7 @@ fork(void) {
 volatile uintptr_t rip;
 
 envid_t
-thread_create(void (*func)()){
+thread_create(void (*func)()) {
 
 	rip = (uintptr_t) func;
 
