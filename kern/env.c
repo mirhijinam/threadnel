@@ -548,3 +548,59 @@ env_run(struct Env *env) {
 
     while(1) {}
 }
+
+// Individual
+struct FreeStacks* thread_free_stacks = NULL; //free stacks for threads
+static struct FreeStacks* free_stacks_stack;
+
+struct FreeStacks* stack_pop()
+{
+	struct FreeStacks* ret = free_stacks_stack;
+	free_stacks_stack = free_stacks_stack->next_stack;
+
+	return ret;
+}
+
+envid_t 
+thread_create(uintptr_t func)
+{
+#ifdef TRACE
+	print_trapframe(&curenv->env_tf); 
+#endif
+	struct Env *e;
+	env_alloc(&e, 0, ENV_TYPE_USER);
+
+	int i;
+	for(i = 0; i < MAX_PROCESS_THREADS; i++)
+	{
+		if(curenv->worker_threads[0][i] == 0) {
+			curenv->worker_threads[0][i] = e->env_id;	
+			break;
+		}
+
+	}
+
+	if(i == MAX_PROCESS_THREADS) {
+			cprintf("MAXIMUM NUMBERS OF THREADS PER PROCESS REACHED - ROLLBACK ALLOCATION\n");
+			e->env_status = ENV_FREE;
+			return -1;
+	}
+
+	e->address_space = curenv->address_space;
+
+	struct FreeStacks* stack = stack_pop();
+	e->env_stack_id = stack->id; 
+	//region_alloc(e, (void*)(stack->addr - PGSIZE), PGSIZE);
+    uintptr_t dst = (uintptr_t) (stack->addr - PAGE_SIZE);    
+    uintptr_t memsz = (uintptr_t) stack->addr;
+    map_region(&e->address_space, ROUNDDOWN( dst, PAGE_SIZE), NULL, 0, ROUNDUP(memsz, PAGE_SIZE), PROT_RWX | PROT_USER_ | ALLOC_ZERO);
+
+	e->env_tf.tf_rsp = stack->addr;
+	e->env_tf.tf_rip = func;
+	e->env_status = ENV_RUNNABLE;
+	e->env_process_id = curenv->env_process_id; 
+#ifdef TRACE
+	cprintf("in thread create: thread id: %d\n", e->env_id);
+#endif
+	return e->env_id;
+}

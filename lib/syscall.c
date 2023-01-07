@@ -147,3 +147,8 @@ int
 sys_gettime(void) {
     return syscall(SYS_gettime, 0, 0, 0, 0, 0, 0, 0);
 }
+
+envid_t
+sys_thread_create(uintptr_t func){
+    return syscall(SYS_thread_create, func, 0, 0, 0, 0, 0, 0);
+}
