@@ -40,7 +40,7 @@ thread_create(void (*func)()){
 
 	rip = (uintptr_t) func;
 
-    envid_t id  = sys_thread_create((uintptr_t)thread_main);
+    envid_t id = sys_thread_create((uintptr_t)thread_main);
 
 	return id;
 }
