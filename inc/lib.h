@@ -177,9 +177,10 @@ struct Mutex {
 	unsigned locked;      
 	struct waiting_queue queue;
 	envid_t owner;
+	uint32_t queueMutex;
 };
 
-void _init(struct Mutex* mtx);
+void mutex_init(struct Mutex* mtx);
 void mutex_destroy(struct Mutex* mtx);
 void mutex_lock(struct Mutex* mtx);
 void mutex_unlock(struct Mutex* mtx);
