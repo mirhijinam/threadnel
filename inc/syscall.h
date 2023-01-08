@@ -19,7 +19,12 @@ enum {
     SYS_ipc_try_send,
     SYS_ipc_recv,
     SYS_gettime,
+//----individual-----------
     SYS_thread_create,
+	SYS_thread_free,
+	SYS_thread_join,
+    SYS_thread_destroy,
+//------------------------
     NSYSCALLS
 };
 
