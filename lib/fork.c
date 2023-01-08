@@ -46,6 +46,28 @@ thread_create(void (*func)()) {
 	return id;
 }
 
+void 
+thread_join(envid_t thread_id) 
+{
+
+	sys_thread_join(thread_id);
+}
+
+void 
+thread_free(envid_t thread_id) 
+{
+
+	sys_thread_free(thread_id);
+}
+
+void 
+thread_destroy(envid_t thread_id) 
+{
+
+	sys_thread_destroy(thread_id);
+}
+
+
 // Individual
 /* Функция добавляет environment в конец списка ожидающих потоков. */
 void 

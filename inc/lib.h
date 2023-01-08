@@ -159,7 +159,11 @@ void wait(envid_t env);
 
 /*Individual task*/
 envid_t thread_create(void (*func)());
+void thread_free(envid_t envid);
+void thread_join(envid_t envid);
+void thread_destroy(envid_t envid);
 void thread_main();
+
 
 int	 sys_thread_create(uintptr_t func);
 void    sys_thread_free(envid_t envid);
